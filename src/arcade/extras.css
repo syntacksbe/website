@@ -1,0 +1,212 @@
+/* Arcade extras: learning paths, review, weekly challenge and leaderboard, trophy cabinet.
+   Only theme tokens from src/styles.css, so day, sunset and night all work. Dark cards use
+   --code-bg (dark in every theme) with fixed light text. */
+
+.ar-x-page { padding-top: 32px; padding-bottom: 96px; display: flex; flex-direction: column; gap: 20px; }
+.ar-x-head h1 { font: 400 clamp(40px, 6vw, 72px) var(--font-display); letter-spacing: .01em; line-height: 1; text-transform: uppercase; }
+.ar-x-head > p:not(.kicker), .ar-x-head > div > p:not(.kicker):not(.ar-x-path-stats) { max-width: 640px; margin-top: 10px; font-size: 17px; color: var(--muted); }
+.ar-x-head .kicker { margin-bottom: 8px; }
+.ar-x-note { text-align: center; }
+.ar-x-meter { display: block; height: 8px; border-radius: 99px; background: var(--border); overflow: hidden; }
+.ar-x-meter i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+
+/* Catalog hero: the paths link, the weekly challenge and the hub */
+.ar-daily-link.ar-x-paths-link { background: var(--accent-3); box-shadow: 0 8px 24px -10px color-mix(in srgb, var(--accent-3) 80%, transparent); }
+.ar-x-strip { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px; margin-top: 28px; }
+.ar-x-hub { display: flex; flex-direction: column; gap: 10px; }
+.ar-x-hub a {
+  display: grid; grid-template-columns: auto 1fr; column-gap: 12px; align-items: center;
+  padding: 12px 16px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border);
+  font-weight: 800; font-size: 15.5px; line-height: 1.25; transition: border-color .2s, transform .2s;
+}
+.ar-x-hub a > span { grid-row: span 2; font-size: 24px; }
+.ar-x-hub a small { font-weight: 600; font-size: 12.5px; color: var(--muted); }
+.ar-x-hub a:hover { border-color: var(--accent); transform: translateX(3px); }
+.ar-x-hub a.review { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); background: linear-gradient(120deg, var(--accent-soft), var(--surface) 70%); }
+
+.ar-x-weekly {
+  position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+  padding: 20px 22px; border-radius: var(--radius); overflow: hidden; color: #f2efe9;
+  background:
+    radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--accent) 42%, transparent), transparent 62%),
+    linear-gradient(180deg, transparent 60%, color-mix(in srgb, var(--accent-3) 22%, transparent)),
+    var(--code-bg);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow: var(--shadow);
+}
+.ar-x-weekly-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; width: 100%; font-size: 12.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.ar-x-weekly-tag { color: #ffb21a; }
+.ar-x-weekly-clock { font-variant-numeric: tabular-nums; color: #f2efe9; opacity: .85; }
+.ar-x-weekly-title { font: 400 clamp(28px, 4vw, 40px) var(--font-display); letter-spacing: .02em; line-height: 1.05; text-transform: uppercase; }
+.ar-x-weekly-blurb { font-size: 14.5px; color: #c9c3b9; }
+.ar-x-weekly-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; width: 100%; }
+.ar-x-weekly .ar-tags { margin-top: 0; }
+.ar-x-weekly .ar-type { background: rgba(255, 255, 255, .1); color: #f2efe9; }
+.ar-x-weekly .ar-stars i { color: rgba(255, 255, 255, .22); }
+.ar-x-weekly .ar-stars i.on { color: #f59e0b; }
+.ar-x-weekly-players { font-size: 13px; font-weight: 700; color: #1fb5ad; }
+.ar-x-weekly .btn { margin-top: 4px; }
+.ar-x-weekly.compact { align-self: start; }
+
+/* Paths list */
+.ar-x-paths { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.ar-x-path-card {
+  display: flex; gap: 14px; height: 100%; padding: 18px; border-radius: var(--radius);
+  background: var(--surface); border: 1px solid var(--border); transition: transform .2s, border-color .2s, box-shadow .2s;
+}
+.ar-x-path-card:hover { transform: translateY(-3px) rotate(-.4deg); border-color: var(--accent); box-shadow: var(--shadow); }
+.ar-x-path-card.complete { border-color: color-mix(in srgb, var(--accent-2) 70%, var(--border)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-2) 18%, transparent); }
+.ar-x-path-icon { display: grid; place-items: center; flex-shrink: 0; width: 52px; height: 52px; border-radius: 16px; font-size: 26px; background: var(--code-bg); }
+.ar-x-path-text { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
+.ar-x-path-text strong { font: 400 24px var(--font-display); letter-spacing: .02em; text-transform: uppercase; line-height: 1.1; }
+.ar-x-path-text small { font-size: 13.5px; line-height: 1.45; color: var(--muted); }
+.ar-x-path-text .ar-x-meter { margin-top: auto; }
+.ar-x-path-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 10px; font-size: 12.5px; font-weight: 700; color: var(--muted); }
+.ar-x-path-foot b { color: var(--accent); }
+
+/* One path: a road with its stops */
+.ar-x-path-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; }
+.ar-x-path-head > div:first-child { flex: 1 1 420px; min-width: 0; }
+.ar-x-path-head .btn { margin-top: 18px; white-space: normal; }
+.ar-x-path-stats { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 12px; font-size: 15px; font-weight: 700; color: var(--muted); }
+.ar-x-path-stats b { color: var(--text); }
+.ar-x-complete { padding: 12px 16px; border-radius: 12px; font-weight: 800; color: #fff; background: linear-gradient(120deg, var(--accent-3), color-mix(in srgb, var(--accent-3) 60%, var(--accent-2))); }
+
+.ar-x-road { --road: 18px; position: relative; list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+/* Asphalt with the finished part lit in blaze orange, and a dashed gold centre line. */
+.ar-x-road::before, .ar-x-road::after { content: ""; position: absolute; top: 0; bottom: -28px; left: 50%; transform: translateX(-50%); }
+.ar-x-road::before {
+  width: var(--road); border-radius: 99px;
+  background: linear-gradient(180deg, var(--accent) 0, var(--accent-2) calc(var(--done) * 100%), var(--code-bg) calc(var(--done) * 100%));
+}
+.ar-x-road::after { width: 3px; background: repeating-linear-gradient(180deg, rgba(255, 255, 255, .7) 0 12px, transparent 12px 26px); opacity: .55; }
+.ar-x-stop { position: relative; z-index: 1; }
+.ar-x-stop > a { display: grid; grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr); align-items: center; }
+.ar-x-dot {
+  grid-column: 2; grid-row: 1; justify-self: center; display: grid; place-items: center;
+  width: 46px; height: 46px; border-radius: 50%; font-weight: 800; font-size: 16px;
+  background: var(--surface); color: var(--muted); border: 3px solid var(--border);
+}
+.ar-x-stop-card {
+  grid-row: 1; display: flex; flex-direction: column; gap: 4px; width: 100%; max-width: 360px; padding: 12px 14px;
+  border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border);
+  transition: transform .2s, border-color .2s, box-shadow .2s;
+}
+.ar-x-stop:nth-child(odd) .ar-x-stop-card { grid-column: 1; justify-self: end; }
+.ar-x-stop:nth-child(even) .ar-x-stop-card { grid-column: 3; justify-self: start; }
+.ar-x-stop-card strong { font-size: 16.5px; line-height: 1.25; }
+.ar-x-stop-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12.5px; font-weight: 700; color: var(--accent); }
+.ar-x-stop > a:hover .ar-x-stop-card { transform: translateY(-2px); border-color: var(--accent); box-shadow: var(--shadow); }
+.ar-x-stop.done .ar-x-dot { background: var(--accent-3); border-color: color-mix(in srgb, var(--accent-3) 60%, #fff); color: #fff; }
+.ar-x-stop.next .ar-x-dot { width: 56px; height: 56px; font-size: 18px; color: #fff; border-color: #ffd23f; background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 0 0 6px var(--accent-soft); }
+.ar-x-stop.next .ar-x-stop-card { border: 2px solid var(--accent); box-shadow: 0 10px 30px -14px var(--accent); }
+.ar-x-stop.ahead .ar-x-stop-card { border-style: dashed; background: color-mix(in srgb, var(--surface) 70%, var(--bg)); }
+.ar-x-stop.ahead .ar-x-stop-card > * { opacity: .72; }
+.ar-x-stop.ahead .ar-x-stop-foot { color: var(--muted); }
+.ar-x-stop.ahead > a:hover .ar-x-stop-card > * { opacity: 1; }
+.ar-x-finish { display: flex; justify-content: center; padding-top: 8px; }
+
+/* Path badge: a gradient ring around an asphalt core */
+.ar-x-badge { --size: 190px; flex-shrink: 0; width: var(--size); height: var(--size); filter: grayscale(1); opacity: .45; }
+.ar-x-badge-ring { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; padding: 9px; background: conic-gradient(var(--accent), var(--accent-2), var(--accent-3), var(--accent)); }
+.ar-x-badge-core {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 100%; height: 100%;
+  border-radius: 50%; padding: 12px; text-align: center; color: #f2efe9; background: radial-gradient(circle at 50% 30%, #2b2118, var(--code-bg) 70%);
+  border: 3px solid rgba(255, 255, 255, .12);
+}
+.ar-x-badge-icon { font-size: 40px; line-height: 1; }
+.ar-x-badge strong { font: 400 23px var(--font-display); letter-spacing: .04em; text-transform: uppercase; line-height: 1.05; color: #ffb21a; }
+.ar-x-badge small { font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #1fb5ad; }
+.ar-x-badge.earned { filter: none; opacity: 1; }
+.ar-x-badge.earned .ar-x-badge-ring { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent-2) 22%, transparent), 0 18px 50px -14px var(--accent); }
+.ar-x-path-head .ar-x-badge { --size: 220px; }
+
+/* Leaderboard */
+.ar-x-board-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
+.ar-x-board { list-style: none; margin: 0; padding: 6px; display: flex; flex-direction: column; gap: 3px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); }
+.ar-x-board li { display: grid; grid-template-columns: 3.4em minmax(0, 1fr) 4.8em 6.2em; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 10px; font-size: 15px; font-weight: 700; }
+.ar-x-board li:nth-child(even):not(.me) { background: color-mix(in srgb, var(--bg) 60%, transparent); }
+.ar-x-rank { font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ar-x-handle { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ar-x-handle small { font-weight: 600; color: var(--muted); }
+.ar-x-stars { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+.ar-x-points { text-align: right; font: 400 19px var(--font-display); letter-spacing: .03em; font-variant-numeric: tabular-nums; }
+.ar-x-board li.podium .ar-x-rank { font-size: 20px; }
+.ar-x-board li.p1 .ar-x-points { color: var(--accent-2); }
+.ar-x-board li.me { color: #fff; background: linear-gradient(120deg, var(--accent), var(--accent-2)); box-shadow: 0 8px 22px -12px var(--accent); }
+.ar-x-board li.me .ar-x-rank, .ar-x-board li.me .ar-x-stars, .ar-x-board li.me small { color: rgba(255, 255, 255, .88); }
+.ar-x-board li.gap { position: relative; margin-top: 18px; }
+.ar-x-board li.gap::before { content: "⋮"; position: absolute; top: -20px; left: 50%; color: var(--muted); font-size: 16px; line-height: 1; }
+
+/* Trophy cabinet */
+.ar-x-cabinet-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; }
+.ar-x-cabinet-head > div:first-child { flex: 1 1 380px; min-width: 0; }
+.ar-x-pct {
+  display: grid; place-items: center; align-content: center; flex-shrink: 0; width: 150px; height: 150px; border-radius: 50%;
+  background: radial-gradient(closest-side, var(--surface) 76%, transparent 77%), conic-gradient(var(--accent) 0, var(--accent-2) calc(var(--p) * 3.6deg), var(--border) 0);
+}
+.ar-x-pct strong { font: 400 44px var(--font-display); line-height: 1; }
+.ar-x-pct small { font-size: 13px; font-weight: 700; color: var(--muted); }
+.ar-x-shelf > header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.ar-x-shelf h2 { font: 400 30px var(--font-display); letter-spacing: .02em; text-transform: uppercase; }
+.ar-x-shelf .ar-category-stars { margin-left: auto; }
+.ar-x-shelf-note { margin: -4px 0 12px; font-size: 14px; color: var(--muted); }
+.ar-x-shelf-note a { color: var(--accent); font-weight: 700; }
+.ar-x-trophies { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.ar-x-trophies li { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 18px 14px 14px; text-align: center; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); }
+.ar-x-trophy-icon { display: grid; place-items: center; width: 64px; height: 64px; margin-bottom: 6px; border-radius: 50%; font-size: 32px; background: var(--code-bg); }
+.ar-x-trophies strong { font-size: 15.5px; line-height: 1.25; }
+.ar-x-trophies small { font-size: 13px; line-height: 1.4; color: var(--muted); }
+.ar-x-trophy-state { display: flex; flex-direction: column; align-items: stretch; gap: 4px; width: 100%; margin-top: auto; padding-top: 8px; font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.ar-x-trophies li.earned { border-color: color-mix(in srgb, var(--accent-2) 70%, var(--border)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-2) 16%, transparent); }
+.ar-x-trophies li.earned .ar-x-trophy-icon { background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--accent-2) 55%, var(--code-bg)), var(--code-bg) 72%); box-shadow: 0 0 0 3px var(--accent-2); }
+.ar-x-trophies li.earned .ar-x-trophy-state { color: var(--accent-3); }
+/* Locked: a dark silhouette on a grey disc. */
+.ar-x-trophy-icon i { font-style: normal; }
+.ar-x-trophies li.locked .ar-x-trophy-icon { background: color-mix(in srgb, var(--muted) 30%, var(--surface)); }
+.ar-x-trophies li.locked .ar-x-trophy-icon i { filter: brightness(0); opacity: .7; }
+.ar-x-trophies li.locked strong { color: var(--muted); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .ar-x-stop.next .ar-x-dot { animation: ar-x-pulse 1.6s ease-in-out infinite; }
+  .ar-x-badge.earned .ar-x-badge-ring { animation: ar-x-badge-in .8s cubic-bezier(.2, 1.5, .4, 1) both; }
+  .ar-x-trophies li.earned .ar-x-trophy-icon { animation: ar-x-badge-in .6s cubic-bezier(.2, 1.5, .4, 1) both; }
+}
+@keyframes ar-x-pulse { 50% { box-shadow: 0 0 0 12px transparent, 0 0 22px var(--accent); } }
+@keyframes ar-x-badge-in { from { transform: scale(.4) rotate(-40deg); opacity: 0; } }
+
+@media (max-width: 900px) {
+  .ar-x-strip, .ar-x-board-wrap { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .ar-x-page { padding-top: 20px; gap: 16px; }
+  .ar-x-head > p:not(.kicker), .ar-x-head > div > p:not(.kicker):not(.ar-x-path-stats) { font-size: 15.5px; }
+  .ar-x-strip { margin-top: 20px; }
+  .ar-x-weekly { padding: 16px; }
+  .ar-x-weekly .btn { width: 100%; justify-content: center; }
+  .ar-x-paths { grid-template-columns: minmax(0, 1fr); }
+  .ar-x-path-card { padding: 14px; }
+  .ar-x-path-head .btn { width: 100%; justify-content: center; text-align: center; }
+  .ar-x-path-head .ar-x-badge { --size: 170px; margin: 0 auto; }
+  /* The road runs down the left edge with every stop to its right. */
+  .ar-x-road::before, .ar-x-road::after { left: 26px; bottom: 0; }
+  .ar-x-stop > a { grid-template-columns: 52px minmax(0, 1fr); column-gap: 8px; }
+  .ar-x-dot { grid-column: 1; }
+  .ar-x-stop:nth-child(odd) .ar-x-stop-card, .ar-x-stop:nth-child(even) .ar-x-stop-card { grid-column: 2; justify-self: stretch; max-width: none; }
+  .ar-x-stop.next .ar-x-dot { width: 50px; height: 50px; }
+  .ar-x-finish .ar-x-badge { --size: 160px; }
+  .ar-x-board { padding: 4px; }
+  .ar-x-board li { grid-template-columns: 2.6em minmax(0, 1fr) auto; gap: 8px; padding: 8px 10px; font-size: 14px; }
+  .ar-x-board .ar-x-stars { display: none; }
+  .ar-x-points { font-size: 17px; }
+  .ar-x-pct { width: 120px; height: 120px; }
+  .ar-x-pct strong { font-size: 36px; }
+  .ar-x-trophies { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .ar-x-trophies li { padding: 14px 10px 12px; }
+  .ar-x-trophy-icon { width: 54px; height: 54px; font-size: 27px; }
+  .ar-x-shelf h2 { font-size: 24px; }
+}
+
+/* The stamps start big and slam down; keep them from widening the page while they do. */
+.ar-finish { overflow-x: clip; }

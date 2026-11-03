@@ -1,0 +1,180 @@
+/* Arcade "SOQL builder" round: query line of token blocks, block pool, live result table, reveal. */
+.ar-soql {
+  --soql-mono: "JetBrains Mono", ui-monospace, monospace;
+  --soql-good: var(--accent-3);
+  --soql-bad: #e5484d;
+  display: flex; flex-direction: column; gap: 14px; min-width: 0; max-width: 100%;
+}
+.ar-soql-kicker {
+  display: inline-block; margin-right: 10px; padding: 2px 9px 1px; border-radius: 6px; vertical-align: 2px;
+  background: var(--code-bg); color: var(--accent-2); font: 400 13px var(--font-display); letter-spacing: .08em; text-transform: uppercase;
+}
+
+/* Syntax colours (always on a dark code background). */
+.ar-soql-t-k { color: var(--accent); font-weight: 800; }
+.ar-soql-t-f { color: #ece8e1; }
+.ar-soql-t-s { color: color-mix(in srgb, var(--accent-3) 55%, #ffffff); }
+.ar-soql-t-n { color: color-mix(in srgb, var(--accent-2) 70%, #ffffff); }
+.ar-soql-t-p { color: #b9b3a9; }
+.ar-soql-t-x { color: #ff8a8d; text-decoration: wavy underline; }
+
+/* The console: the query line plus its status. */
+.ar-soql-console { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ar-soql-line {
+  position: relative; overflow: hidden;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 58px; padding: 10px 12px;
+  border-radius: var(--radius); background: var(--code-bg); border: 2px solid color-mix(in srgb, var(--text) 14%, var(--code-bg));
+  font: 500 14px/1.4 var(--soql-mono); color: #ece8e1;
+  transition: border-color .25s, box-shadow .25s;
+}
+.ar-soql-line.ok { border-color: color-mix(in srgb, var(--soql-good) 75%, transparent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--soql-good) 16%, transparent); }
+.ar-soql-line.bad { border-color: color-mix(in srgb, var(--soql-bad) 70%, transparent); animation: ar-soql-shake .4s ease; }
+.ar-soql-line.drop-end { border-style: dashed; border-color: var(--accent-2); }
+.ar-soql-line.done.right { border-color: var(--soql-good); }
+.ar-soql-line.done.half { border-color: var(--accent-2); }
+.ar-soql-line.done.wrong { border-color: var(--soql-bad); }
+.ar-soql-line.running::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(100deg, transparent 20%, color-mix(in srgb, var(--accent-2) 30%, transparent) 50%, transparent 80%);
+  animation: ar-soql-scan .75s ease-in-out both;
+}
+.ar-soql-prompt { color: var(--accent-2); font-weight: 800; user-select: none; }
+.ar-soql-placeholder { color: #8a847a; font-style: italic; font-size: 13.5px; }
+.ar-soql-caret { width: 9px; height: 19px; border-radius: 2px; background: var(--accent-2); animation: ar-soql-blink 1s steps(1) infinite; }
+
+/* Blocks: chunky key caps with a coloured edge per kind. */
+.ar-soql-block, .ar-soql-chip {
+  --edge: var(--accent-3);
+  max-width: 100%; padding: 6px 10px; border-radius: 9px; border: 0;
+  font: 500 14px/1.35 var(--soql-mono); text-align: left; white-space: normal; overflow-wrap: anywhere;
+  cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  transition: transform .12s, box-shadow .12s, opacity .2s;
+}
+.ar-soql-block.clause, .ar-soql-chip.clause { --edge: var(--accent); }
+.ar-soql-block.logic, .ar-soql-chip.logic { --edge: var(--accent-2); }
+.ar-soql-block.paren, .ar-soql-chip.paren { --edge: #8a847a; }
+.ar-soql-block {
+  background: color-mix(in srgb, #ffffff 9%, var(--code-bg)); color: #ece8e1;
+  box-shadow: inset 0 -3px 0 var(--edge);
+  animation: ar-soql-snap .34s cubic-bezier(.2, 1.5, .4, 1) both;
+}
+.ar-soql-block:not(:disabled):hover { box-shadow: inset 0 -3px 0 var(--edge), 0 0 0 2px color-mix(in srgb, var(--soql-bad) 55%, transparent); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--soql-bad) 70%, transparent); }
+.ar-soql-block:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+.ar-soql-block:disabled { cursor: default; }
+.ar-soql-block.dragging { opacity: .35; }
+.ar-soql-block.drop-before { box-shadow: inset 0 -3px 0 var(--edge), -5px 0 0 -1px var(--accent-2); }
+
+.ar-soql-status { min-height: 1.4em; margin: 0; padding-left: 4px; font-size: 13.5px; font-weight: 600; color: var(--muted); }
+.ar-soql-status::before { margin-right: 6px; }
+.ar-soql-status.hint::before { content: "⋯"; color: var(--accent-2); font-weight: 800; }
+.ar-soql-status.bad { color: var(--soql-bad); }
+.ar-soql-status.bad::before { content: "⚠"; }
+.ar-soql-status.ok { color: var(--soql-good); }
+.ar-soql-status.ok::before { content: "✓"; font-weight: 800; }
+.ar-soql-status.run::before { content: "▶"; color: var(--accent-2); }
+
+/* The pool of blocks to pick from. */
+.ar-soql-pool { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; padding: 12px; border-radius: var(--radius); background: var(--bg-alt); border: 1px dashed var(--border); }
+.ar-soql-chip {
+  background: var(--code-bg); color: #ece8e1;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 10%, transparent), 0 4px 0 var(--edge);
+  margin-bottom: 4px; animation: pop-in .25s both;
+}
+.ar-soql-chip:not(:disabled):not(.ghost):hover { transform: translateY(-2px); box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 10%, transparent), 0 6px 0 var(--edge); }
+.ar-soql-chip:not(:disabled):not(.ghost):active { transform: translateY(3px); box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 10%, transparent), 0 1px 0 var(--edge); }
+.ar-soql-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.ar-soql-chip.ghost { background: transparent; box-shadow: none; outline: 2px dashed var(--border); outline-offset: -2px; cursor: default; animation: none; }
+.ar-soql-chip.ghost > * { visibility: hidden; }
+
+.ar-soql-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ar-soql-tool {
+  padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface);
+  font: inherit; font-size: 13.5px; font-weight: 700; color: var(--muted); cursor: pointer; transition: color .2s, border-color .2s;
+}
+.ar-soql-tool:not(:disabled):hover { color: var(--text); border-color: var(--accent); }
+.ar-soql-tool:disabled { opacity: .45; cursor: default; }
+.ar-soql-tool.small { margin-left: auto; padding: 4px 10px; font-size: 12.5px; }
+.ar-soql-tool[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+.ar-soql-run { margin-left: auto; border: 0; cursor: pointer; font-family: inherit; font-size: 15px; letter-spacing: .02em; }
+.ar-soql-run:disabled { opacity: .45; cursor: not-allowed; filter: grayscale(.5); }
+.ar-soql-run.running { opacity: 1; filter: none; animation: ar-soql-pulse .75s ease-in-out infinite alternate; }
+
+/* Results. */
+.ar-soql-results, .ar-soql-answer { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.ar-soql-results-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.ar-soql-label { font: 400 15px var(--font-display); letter-spacing: .06em; text-transform: uppercase; }
+.ar-soql-count {
+  padding: 2px 9px; border-radius: 99px; background: var(--accent-soft); color: var(--accent);
+  font: 700 12.5px var(--soql-mono); animation: ar-soql-bump .4s cubic-bezier(.2, 1.6, .4, 1);
+}
+.ar-soql-table-wrap { max-width: 100%; overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); -webkit-overflow-scrolling: touch; }
+.ar-soql-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.ar-soql-table th {
+  position: sticky; top: 0; padding: 8px 12px; text-align: left; white-space: nowrap;
+  background: var(--bg-alt); color: var(--muted); font: 700 12px var(--soql-mono); letter-spacing: .02em;
+  animation: ar-soql-fade .3s both;
+}
+.ar-soql-table td { padding: 7px 12px; border-top: 1px solid var(--border); white-space: nowrap; animation: ar-soql-fade .3s both; }
+.ar-soql-table td.num { text-align: right; font-family: var(--soql-mono); font-size: 13px; }
+.ar-soql-table td.blank { color: var(--muted); opacity: .6; }
+.ar-soql-table tbody tr { position: relative; animation: ar-soql-row-in .38s cubic-bezier(.2, .9, .3, 1.1) both; animation-delay: calc(var(--i, 0) * 45ms); }
+.ar-soql-table tbody tr.right { background: color-mix(in srgb, var(--soql-good) 13%, transparent); box-shadow: inset 4px 0 0 var(--soql-good); }
+.ar-soql-table tbody tr.wrong { background: color-mix(in srgb, var(--soql-bad) 10%, transparent); box-shadow: inset 4px 0 0 var(--soql-bad); }
+.ar-soql-table tbody tr.wrong td { text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--soql-bad) 60%, transparent); }
+.ar-soql-table tbody tr.moved { background: color-mix(in srgb, var(--accent-2) 13%, transparent); box-shadow: inset 4px 0 0 var(--accent-2); }
+.ar-soql-table tbody tr.missing { background: color-mix(in srgb, var(--soql-bad) 8%, transparent); box-shadow: inset 4px 0 0 var(--soql-bad); }
+.ar-soql-table tbody tr.missing td:first-child::after { content: "missed"; margin-left: 8px; padding: 1px 6px; border-radius: 99px; background: var(--soql-bad); color: #fff; font: 700 10.5px var(--soql-mono); text-transform: uppercase; }
+.ar-soql-empty td { padding: 18px 12px; text-align: center; color: var(--muted); font-weight: 600; white-space: normal; }
+.ar-soql-empty td::before { content: "∅ "; color: var(--accent-2); font-weight: 800; }
+
+/* Reveal. */
+.ar-soql-verdict {
+  --tone: var(--soql-good);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 14px 16px; border-radius: var(--radius);
+  background: color-mix(in srgb, var(--tone) 9%, var(--surface)); border: 1px solid color-mix(in srgb, var(--tone) 40%, transparent);
+  animation: fade-up .35s both;
+}
+.ar-soql-verdict.half { --tone: var(--accent-2); }
+.ar-soql-verdict.wrong { --tone: var(--soql-bad); }
+.ar-soql-stamp {
+  padding: 4px 12px 2px; border: 3px solid var(--tone); border-radius: 8px; color: var(--tone);
+  font: 400 22px/1.1 var(--font-display); letter-spacing: .06em; text-transform: uppercase;
+  transform: rotate(-4deg); animation: ar-soql-stamp .45s cubic-bezier(.2, 1.4, .4, 1) both;
+}
+.ar-soql-checks { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0; padding: 0; list-style: none; font-size: 14px; font-weight: 600; }
+.ar-soql-checks li { display: flex; align-items: baseline; gap: 6px; }
+.ar-soql-checks li::before { font-weight: 800; }
+.ar-soql-checks li.ok::before { content: "✓"; color: var(--soql-good); }
+.ar-soql-checks li.no::before { content: "✗"; color: var(--soql-bad); }
+.ar-soql-checks b { font: 700 11.5px var(--soql-mono); text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.ar-soql-ref {
+  margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--code-bg); color: #ece8e1;
+  font: 500 13.5px/1.6 var(--soql-mono); white-space: pre-wrap; overflow-wrap: anywhere;
+  box-shadow: inset 4px 0 0 var(--soql-good);
+}
+
+@keyframes ar-soql-snap {
+  0% { opacity: 0; transform: translateY(16px) scale(1.15); }
+  60% { opacity: 1; transform: translateY(-2px) scale(.96); }
+  100% { transform: none; }
+}
+@keyframes ar-soql-row-in { from { opacity: 0; transform: translateX(-22px); } }
+@keyframes ar-soql-fade { from { opacity: 0; } }
+@keyframes ar-soql-bump { 0% { transform: scale(1); } 40% { transform: scale(1.25); } 100% { transform: scale(1); } }
+@keyframes ar-soql-blink { 50% { opacity: 0; } }
+@keyframes ar-soql-scan { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+@keyframes ar-soql-pulse { to { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 25%, transparent); } }
+@keyframes ar-soql-shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+@keyframes ar-soql-stamp { from { opacity: 0; transform: rotate(-4deg) scale(2); } }
+
+@media (max-width: 640px) {
+  .ar-soql-line { min-height: 52px; padding: 8px 10px; gap: 5px; font-size: 12.5px; }
+  .ar-soql-block, .ar-soql-chip { padding: 6px 8px; font-size: 12.5px; }
+  .ar-soql-pool { gap: 7px; padding: 10px; }
+  .ar-soql-actions .ar-soql-run { flex-basis: 100%; justify-content: center; margin-left: 0; order: -1; padding: 12px; }
+  .ar-soql-actions .ar-soql-tool { flex: 1; }
+  .ar-soql-table { font-size: 12.5px; }
+  .ar-soql-table th, .ar-soql-table td { padding: 6px 9px; }
+  .ar-soql-stamp { font-size: 19px; }
+  .ar-soql-ref { font-size: 12px; }
+}

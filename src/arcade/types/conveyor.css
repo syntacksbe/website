@@ -1,0 +1,162 @@
+/* Arcade plug-in: Deploy conveyor. Crates ride a belt into Production; broken dependencies explode. */
+.ar-conveyor { --cv-red: #e5484d; --cv-ok: var(--accent-3); display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+html[data-theme="night"] .ar-conveyor { --cv-red: #ff6b6f; }
+
+/* HUD: countdown, fuse and tally */
+.ar-conveyor-hud { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.ar-conveyor-clock {
+  display: inline-flex; align-items: baseline; gap: 3px; min-width: 74px; padding: 4px 12px; border-radius: 99px;
+  background: var(--code-bg); color: #f2efe9; font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums;
+}
+.ar-conveyor-clock b { font: 400 22px/1 var(--font-display); letter-spacing: .03em; }
+.ar-conveyor-clock.urgent { background: var(--cv-red); color: #fff; animation: ar-conveyor-tick 1s ease-in-out infinite; }
+.ar-conveyor-fuse { flex: 1; min-width: 80px; height: 8px; border-radius: 99px; background: var(--bg-alt); overflow: hidden; }
+.ar-conveyor-fuse i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent-2), var(--accent)); transition: width 1s linear; }
+.ar-conveyor-fuse i.urgent { background: var(--cv-red); }
+.ar-conveyor-tally { display: inline-flex; gap: 6px; font-size: 13px; font-weight: 800; }
+.ar-conveyor-tally span { padding: 4px 10px; border-radius: 99px; white-space: nowrap; }
+.ar-conveyor-tally .ok { color: var(--cv-ok); background: color-mix(in srgb, var(--accent-3) 14%, transparent); }
+.ar-conveyor-tally .bad { color: var(--cv-red); background: color-mix(in srgb, var(--cv-red) 12%, transparent); }
+
+/* The line: belt on the left, Production on the right */
+.ar-conveyor-line { display: grid; grid-template-columns: minmax(0, 1fr) 100px; align-items: stretch; gap: 10px; }
+.ar-conveyor-belt {
+  position: relative; list-style: none; margin: 0; padding: 10px 10px 22px; display: flex; gap: 6px; min-width: 0;
+  border-radius: var(--radius); background: var(--bg-alt); border: 1px solid var(--border);
+}
+/* the moving rubber belt under the crates */
+.ar-conveyor-belt::after {
+  content: ""; position: absolute; left: 8px; right: 8px; bottom: 6px; height: 10px; border-radius: 99px;
+  background: repeating-linear-gradient(90deg, var(--code-bg) 0 14px, color-mix(in srgb, var(--accent-2) 55%, var(--code-bg)) 14px 18px);
+  background-size: 36px 100%;
+  animation: ar-conveyor-roll 1.6s linear infinite;
+}
+.phase-deploying .ar-conveyor-belt::after { animation-duration: .45s; }
+.phase-landed .ar-conveyor-belt::after { animation-play-state: paused; }
+.ar-conveyor-slot { position: relative; z-index: 1; flex: 1 1 0; min-width: 0; display: flex; border-radius: 12px; }
+.ar-conveyor-slot.over { box-shadow: 0 0 0 2px var(--accent); }
+.ar-conveyor-empty {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 108px; padding: 6px;
+  border-radius: 12px; border: 2px dashed var(--border); font-size: 11.5px; font-weight: 700; color: var(--muted); text-align: center;
+}
+.ar-conveyor-empty b { font: 400 18px var(--font-display); color: var(--border); }
+.ar-conveyor-slot.next .ar-conveyor-empty { border-color: var(--accent); color: var(--accent); animation: ar-conveyor-wait 1.4s ease-in-out infinite; }
+.ar-conveyor-slot.next .ar-conveyor-empty b { color: var(--accent); }
+
+/* Crates */
+.ar-conveyor-crate {
+  position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  min-height: 108px; padding: 10px 6px 8px; border-radius: 12px; cursor: pointer; text-align: center;
+  font: inherit; color: var(--text);
+  background:
+    linear-gradient(180deg, transparent 0 46%, color-mix(in srgb, var(--accent-2) 22%, transparent) 46% 54%, transparent 54%),
+    color-mix(in srgb, var(--accent-2) 14%, var(--surface));
+  border: 2px solid color-mix(in srgb, var(--accent-2) 55%, var(--border));
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--accent-2) 40%, var(--border));
+  transition: transform .2s cubic-bezier(.2, 1.4, .4, 1), border-color .2s, opacity .3s, box-shadow .2s;
+  animation: ar-conveyor-drop .42s cubic-bezier(.2, 1.5, .4, 1) backwards;
+}
+.ar-conveyor-crate:not(:disabled):hover, .ar-conveyor-crate:focus-visible { transform: translateY(-3px); border-color: var(--accent); outline: none; }
+.ar-conveyor-crate:disabled { cursor: default; }
+.ar-conveyor-crate[draggable="true"] { cursor: grab; }
+.ar-conveyor-icon { font-size: 22px; line-height: 1.1; }
+.ar-conveyor-crate small { font-size: 10.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); line-height: 1.2; }
+.ar-conveyor-crate strong { font-size: 12.5px; font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; }
+.ar-conveyor-no {
+  position: absolute; top: -8px; left: -6px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--code-bg); color: #f2efe9; font-size: 11.5px; font-weight: 800;
+}
+.ar-conveyor-crate.queued { opacity: .9; }
+.ar-conveyor-crate.rolling { transform: translateX(6px) scale(1.06); border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft), 0 8px 20px -8px var(--accent); animation: ar-conveyor-jiggle .38s ease-in-out infinite; }
+.ar-conveyor-crate.ok { border-color: var(--cv-ok); box-shadow: 0 4px 0 color-mix(in srgb, var(--accent-3) 50%, var(--border)); background: color-mix(in srgb, var(--accent-3) 12%, var(--surface)); }
+.ar-conveyor-crate.boom { border-color: var(--cv-red); box-shadow: 0 4px 0 color-mix(in srgb, var(--cv-red) 50%, var(--border)); background: color-mix(in srgb, var(--cv-red) 10%, var(--surface)); animation: shake .45s ease; }
+.ar-conveyor-crate.boom > :not(.ar-conveyor-blast):not(.ar-conveyor-no) { opacity: .45; }
+.ar-conveyor-crate.missed { opacity: .6; border-style: dashed; animation: none; }
+.ar-conveyor-stamp {
+  position: absolute; top: -8px; right: -6px; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--cv-ok); color: #fff; font-style: normal; font-size: 13px; font-weight: 900; animation: pop-in .3s cubic-bezier(.2, 1.6, .4, 1) both;
+}
+.ar-conveyor-stamp.late { background: var(--muted); }
+.ar-conveyor-blast {
+  position: absolute; inset: 0; display: grid; place-items: center; font-style: normal; font-size: 40px; pointer-events: none;
+  animation: ar-conveyor-blast .55s cubic-bezier(.2, 1.4, .4, 1) both;
+}
+
+/* Production building */
+.ar-conveyor-prod {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 10px 8px; text-align: center;
+  border-radius: var(--radius); background: var(--code-bg); color: #f2efe9; border: 2px solid var(--code-bg);
+  transition: border-color .25s, box-shadow .25s;
+}
+.ar-conveyor-prod strong { font: 400 17px var(--font-display); letter-spacing: .06em; text-transform: uppercase; }
+.ar-conveyor-prod small { font-size: 11.5px; font-weight: 700; color: #b9b3a8; line-height: 1.3; }
+.ar-conveyor-factory { font-size: 36px; line-height: 1.1; animation: bump .45s cubic-bezier(.2, 1.6, .4, 1); }
+.ar-conveyor-prod.ok { border-color: var(--cv-ok); box-shadow: 0 0 18px -4px var(--cv-ok); }
+.ar-conveyor-prod.boom { border-color: var(--cv-red); box-shadow: 0 0 18px -4px var(--cv-red); }
+.ar-conveyor-prod.boom .ar-conveyor-factory { animation: shake .45s ease; }
+
+/* Loading dock */
+.ar-conveyor-dock { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: var(--radius); border: 1px dashed var(--border); transition: border-color .2s, background .2s; }
+.ar-conveyor-dock.over { border-color: var(--accent); background: var(--accent-soft); }
+.ar-conveyor-dock-label { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.ar-conveyor-pile { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 10px 8px; }
+.ar-conveyor-pile .ar-conveyor-crate { min-height: 96px; }
+.ar-conveyor-done { grid-column: 1 / -1; padding: 8px; font-size: 14px; font-weight: 700; color: var(--accent-3); text-align: center; }
+
+.ar-conveyor-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.ar-conveyor-actions .ar-help { flex: 1; min-width: 200px; }
+.ar-conveyor-deploy { border: 0; cursor: pointer; font-family: inherit; }
+.ar-conveyor-deploy:disabled { opacity: .55; cursor: default; }
+
+/* The correct order, after the round */
+.ar-conveyor-answer { display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); animation: fade-up .3s both; }
+.ar-conveyor-answer > strong { font-size: 15px; color: var(--accent-3); }
+.ar-conveyor-answer ol { margin: 0; padding: 0; list-style: none; counter-reset: cv; display: flex; flex-direction: column; gap: 6px; }
+.ar-conveyor-answer li { counter-increment: cv; display: flex; align-items: flex-start; gap: 8px; font-size: 14px; line-height: 1.4; }
+.ar-conveyor-answer li::before {
+  content: counter(cv); flex-shrink: 0; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent-3); color: #fff; font-size: 11.5px; font-weight: 800;
+}
+.ar-conveyor-answer li > span { font-size: 16px; line-height: 1.3; }
+.ar-conveyor-answer li > div { min-width: 0; overflow-wrap: anywhere; }
+.ar-conveyor-answer small { font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.ar-conveyor-answer em { display: block; font-style: normal; font-size: 12.5px; color: var(--muted); }
+.ar-conveyor-answer p { font-size: 13px; color: var(--muted); }
+
+@keyframes ar-conveyor-roll { to { background-position: 36px 0; } }
+@keyframes ar-conveyor-roll-down { to { background-position: 0 36px; } }
+@keyframes ar-conveyor-drop { 0% { opacity: 0; transform: translateY(-16px) scale(.9); } 60% { opacity: 1; transform: translateY(3px) scale(1.02); } 100% { transform: none; } }
+@keyframes ar-conveyor-jiggle { 50% { transform: translateX(10px) scale(1.06) rotate(1deg); } }
+@keyframes ar-conveyor-blast { 0% { opacity: 0; transform: scale(.2); } 45% { opacity: 1; transform: scale(1.5); } 100% { transform: scale(1); } }
+@keyframes ar-conveyor-jiggle-down { 50% { transform: translateY(6px) scale(1.03) rotate(.5deg); } }
+@keyframes ar-conveyor-tick { 50% { transform: scale(1.08); } }
+@keyframes ar-conveyor-wait { 50% { background: var(--accent-soft); } }
+
+/* Phones: the belt runs top to bottom into Production */
+@media (max-width: 820px) {
+  .ar-conveyor-line { grid-template-columns: minmax(0, 1fr); }
+  .ar-conveyor-belt { flex-direction: column; padding: 10px 10px 10px 30px; }
+  .ar-conveyor-belt::after {
+    left: 9px; right: auto; top: 10px; bottom: 10px; width: 10px; height: auto;
+    background: repeating-linear-gradient(180deg, var(--code-bg) 0 14px, color-mix(in srgb, var(--accent-2) 55%, var(--code-bg)) 14px 18px);
+    background-size: 100% 36px;
+    animation-name: ar-conveyor-roll-down;
+  }
+  .ar-conveyor-empty { min-height: 48px; flex-direction: row; gap: 8px; }
+  .ar-conveyor-crate {
+    display: grid; grid-template-columns: 30px minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 8px; align-items: center;
+    min-height: 54px; padding: 8px 34px 8px 10px; text-align: left;
+  }
+  .ar-conveyor-icon { grid-row: 1 / 3; font-size: 22px; text-align: center; }
+  .ar-conveyor-crate strong { font-size: 14px; }
+  .ar-conveyor-no { top: 50%; left: -30px; transform: translateY(-50%); }
+  .ar-conveyor-stamp { top: 50%; right: 8px; transform: translateY(-50%); }
+  .ar-conveyor-blast { justify-items: end; padding-right: 4px; font-size: 30px; }
+  .ar-conveyor-crate.rolling { transform: translateY(4px) scale(1.03); animation-name: ar-conveyor-jiggle-down; }
+  .ar-conveyor-prod { flex-direction: row; flex-wrap: wrap; gap: 4px 10px; padding: 8px 12px; }
+  .ar-conveyor-factory { font-size: 28px; }
+  .ar-conveyor-pile { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .ar-conveyor-pile .ar-conveyor-crate { min-height: 54px; }
+  .ar-conveyor-tally { width: 100%; }
+  .ar-conveyor-tally span { flex: 1; text-align: center; }
+}

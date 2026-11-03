@@ -1,0 +1,129 @@
+/* Arcade: "Wire it up" (src/arcade/types/wire.jsx). Columns of nodes on a circuit board; wires are
+   SVG curves under the nodes. Below the width the columns need, `.rows` turns each column into a row. */
+.ar-wire-board {
+  position: relative; padding: 18px 16px; border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background:
+    radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--muted) 22%, transparent) 1px, transparent 1.5px) 0 0 / 18px 18px,
+    var(--bg);
+}
+.ar-wire-svg { position: absolute; top: 0; left: 0; z-index: 0; overflow: visible; pointer-events: none; }
+.ar-wire-cols { position: relative; z-index: 1; pointer-events: none; }
+.ar-wire-board.cols .ar-wire-cols { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 44px; }
+.ar-wire-board.cols .ar-wire-col { display: flex; flex-direction: column; justify-content: center; gap: 14px; }
+.ar-wire-board.rows .ar-wire-cols { display: flex; flex-direction: column; gap: 46px; }
+.ar-wire-board.rows .ar-wire-col { display: flex; justify-content: center; gap: 8px; }
+.ar-wire-board.rows .ar-wire-node { flex: 1 1 0; min-width: 0; max-width: 150px; }
+
+/* Nodes */
+.ar-wire-node { position: relative; pointer-events: auto; transition: opacity .3s; }
+.ar-wire-card {
+  display: flex; align-items: center; gap: 9px; width: 100%; height: 100%; padding: 9px 11px;
+  border-radius: 12px; border: 2px solid var(--border); background: var(--surface); color: var(--text);
+  font: inherit; font-size: 13.5px; font-weight: 700; line-height: 1.25; text-align: left; cursor: pointer;
+  user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+  transition: border-color .2s, box-shadow .2s, transform .2s cubic-bezier(.2, 1.4, .4, 1);
+}
+.ar-wire-card:disabled { cursor: default; }
+.ar-wire-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ar-wire-icon { display: grid; place-items: center; flex-shrink: 0; width: 30px; height: 30px; border-radius: 9px; background: var(--bg-alt); font-size: 17px; line-height: 1; }
+.ar-wire-label { min-width: 0; overflow-wrap: anywhere; hyphens: auto; }
+.ar-wire-board.rows .ar-wire-card { flex-direction: column; justify-content: flex-start; gap: 5px; padding: 8px 5px; font-size: 12px; text-align: center; }
+.ar-wire-board.rows .ar-wire-icon { width: 26px; height: 26px; font-size: 15px; }
+
+.ar-wire-node:not(.on):not(.over) .ar-wire-card:not(:disabled):hover { border-color: color-mix(in srgb, var(--accent) 60%, var(--border)); transform: translateY(-1px); }
+.ar-wire-node.linked .ar-wire-card { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); }
+.ar-wire-node.on .ar-wire-card { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft), 0 10px 24px -12px var(--accent); transform: translateY(-2px); }
+.ar-wire-node.over .ar-wire-card { border-color: var(--accent-2); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-2) 25%, transparent); transform: scale(1.04); }
+.ar-wire-board.done .ar-wire-node.need .ar-wire-card { border-color: var(--accent-3); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-3) 18%, transparent); }
+.ar-wire-board.done .ar-wire-node.decoy { opacity: .5; }
+.ar-wire-board.done .ar-wire-node.decoy .ar-wire-card { border-style: dashed; }
+
+/* Ports: output on the right (rows: bottom), input socket on the left (rows: top). */
+.ar-wire-port, .ar-wire-socket { position: absolute; border-radius: 50%; }
+.ar-wire-port {
+  z-index: 2; width: 18px; height: 18px; top: 50%; right: -9px; margin-top: -9px;
+  background: var(--accent); border: 3px solid var(--surface); box-shadow: 0 0 0 2px var(--accent);
+  cursor: crosshair; touch-action: none;
+  transition: transform .2s;
+}
+.ar-wire-port::before { content: ""; position: absolute; inset: -11px; border-radius: 50%; }
+.ar-wire-port:hover { transform: scale(1.2); }
+.ar-wire-port.hint { animation: ar-wire-pulse 1.8s ease-in-out infinite; }
+.ar-wire-socket {
+  width: 10px; height: 10px; top: 50%; left: -5px; margin-top: -5px;
+  background: var(--bg); border: 2px solid var(--border); pointer-events: none;
+}
+.ar-wire-node.linked .ar-wire-socket { border-color: var(--accent); }
+.ar-wire-board.rows .ar-wire-port { top: auto; right: auto; bottom: -9px; left: 50%; margin: 0 0 0 -9px; }
+.ar-wire-board.rows .ar-wire-socket { top: -5px; left: 50%; margin: 0 0 0 -5px; }
+
+/* Wires */
+.ar-wire-path, .ar-wire-packet, .ar-wire-ghost, .ar-wire-drag, .ar-wire-hit { fill: none; stroke-linecap: round; }
+.ar-wire-path {
+  stroke: var(--accent); stroke-width: 3;
+  stroke-dasharray: 100; stroke-dashoffset: 0;
+  animation: ar-wire-draw .45s cubic-bezier(.3, .7, .4, 1) both;
+  transition: stroke .25s, stroke-width .25s, opacity .3s;
+}
+.ar-wire-hit { stroke: transparent; stroke-width: 20; pointer-events: stroke; cursor: pointer; }
+@media (hover: hover) {
+  .ar-wire-link:hover .ar-wire-path { stroke: #e5484d; stroke-width: 4; }
+}
+.ar-wire-link.live .ar-wire-path { stroke: var(--accent-2); }
+.ar-wire-packet { stroke-width: 8; stroke-dasharray: 7 120; }
+.ar-wire-link.live .ar-wire-packet { stroke: var(--accent-2); animation: ar-wire-send .7s ease-in var(--d, 0ms) both; }
+.ar-wire-link.right .ar-wire-path { stroke: var(--accent-3); stroke-width: 3.5; }
+.ar-wire-link.right .ar-wire-packet {
+  stroke: color-mix(in srgb, var(--accent-3) 55%, #fff); stroke-width: 6; stroke-dasharray: 4 36;
+  animation: ar-wire-flow 1.6s linear infinite;
+}
+.ar-wire-link.wrong .ar-wire-path { stroke: #e5484d; animation: ar-wire-fizzle .7s steps(1, end) both; opacity: .6; }
+.ar-wire-ghost { stroke: var(--accent-3); stroke-width: 2.5; stroke-dasharray: 6 7; opacity: .85; animation: ar-wire-ghost .5s .25s both; }
+.ar-wire-drag { stroke: var(--accent); stroke-width: 3; stroke-dasharray: 7 6; opacity: .85; animation: ar-wire-march .5s linear infinite; }
+.ar-wire-drag.snap { stroke: var(--accent-2); opacity: 1; }
+
+/* Wire list and actions */
+.ar-wire-bar { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 10px 16px; }
+.ar-wire-list { display: flex; flex-wrap: wrap; gap: 6px; flex: 1 1 260px; min-width: 0; margin: 0; padding: 0; list-style: none; }
+.ar-wire-list li.empty { padding: 6px 0; font-size: 13px; font-weight: 600; color: var(--muted); }
+.ar-wire-list button {
+  display: inline-flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; max-width: 100%; padding: 5px 10px;
+  border-radius: 99px; border: 1px solid var(--border); background: var(--bg-alt); color: var(--text);
+  font: inherit; font-size: 12.5px; font-weight: 600; line-height: 1.3; text-align: left; cursor: pointer;
+  animation: ar-wire-pop .25s both;
+}
+.ar-wire-list button:disabled { cursor: default; }
+.ar-wire-list button:not(:disabled):hover { border-color: #e5484d; }
+.ar-wire-list b { color: var(--accent); }
+.ar-wire-list i { font-style: normal; font-size: 11px; color: var(--muted); }
+.ar-wire-list li.right button { border-color: var(--accent-3); background: color-mix(in srgb, var(--accent-3) 12%, var(--bg)); }
+.ar-wire-list li.right b { color: var(--accent-3); }
+.ar-wire-list li.wrong button { border-color: #e5484d; background: rgba(229, 72, 77, .09); text-decoration: line-through; text-decoration-color: rgba(229, 72, 77, .6); }
+.ar-wire-list li.wrong b { color: #e5484d; }
+.ar-wire-actions { display: flex; gap: 8px; margin-left: auto; }
+.ar-wire-actions .btn { font-family: inherit; cursor: pointer; }
+.ar-wire-actions .btn:disabled { opacity: .5; cursor: default; transform: none; }
+
+@media (max-width: 640px) {
+  .ar-wire-board { padding: 14px 10px; }
+  .ar-wire-actions { width: 100%; }
+  .ar-wire-actions .btn { flex: 1; justify-content: center; }
+}
+
+@keyframes ar-wire-draw { from { stroke-dashoffset: 100; } }
+@keyframes ar-wire-send { from { stroke-dashoffset: 7; } to { stroke-dashoffset: -100; } }
+@keyframes ar-wire-flow { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -40; } }
+@keyframes ar-wire-march { to { stroke-dashoffset: -13; } }
+@keyframes ar-wire-ghost { from { opacity: 0; } }
+@keyframes ar-wire-fizzle {
+  0% { opacity: 1; stroke-width: 6; }
+  15% { opacity: .2; }
+  30% { opacity: 1; stroke-width: 4; }
+  45% { opacity: .15; }
+  60% { opacity: .9; }
+  80% { opacity: .3; }
+  100% { opacity: .6; stroke-width: 3; }
+}
+@keyframes ar-wire-pulse { 50% { box-shadow: 0 0 0 2px var(--accent), 0 0 0 7px var(--accent-soft); } }
+@keyframes ar-wire-pop { from { opacity: 0; transform: scale(.9); } }

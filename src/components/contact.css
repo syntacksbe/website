@@ -1,0 +1,248 @@
+/* Contact: the CTA card with an in-game phone next to it. The phone runs a messaging app whose
+   conversation is the contact form. Selectors start with .cta where styles.css (loaded later) would win. */
+.cta.contact-cta {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 360px); align-items: center; gap: 48px;
+  padding: 64px 56px; text-align: left;
+}
+.cta .contact-copy p { margin: 18px 0 0; }
+.cta .contact-copy .cta-actions { justify-content: flex-start; }
+.cta .contact-copy .contact-or { margin-top: 18px; font-size: 14px; font-weight: 600; opacity: .75; }
+
+/* The device: a dark rounded body, slightly tilted, with a punch-hole camera in the status bar. */
+.phone {
+  position: relative; justify-self: center; width: 100%; max-width: 360px; padding: 10px; border-radius: 42px;
+  background: linear-gradient(160deg, #2a2c33, #0d0e11 55%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1), 0 0 0 2px #0a0b0d, 0 34px 70px -24px rgba(0, 0, 0, .75);
+  transform: rotate(1.5deg); transition: transform .4s cubic-bezier(.2, 1.3, .4, 1);
+}
+.phone:focus-within, .phone:hover { transform: none; }
+.phone::before {
+  content: ""; position: absolute; right: -3px; top: 120px; width: 3px; height: 54px; border-radius: 0 3px 3px 0;
+  background: linear-gradient(180deg, #ff5a1f, #ffb21a);
+}
+.phone-screen {
+  position: relative; overflow: hidden; display: flex; flex-direction: column; min-height: 540px;
+  border-radius: 32px; background: var(--bg); color: var(--text); text-align: left;
+  font-size: 14px; line-height: 1.45;
+}
+.cta .phone p { position: static; max-width: none; margin: 0; font-size: inherit; opacity: 1; }
+
+.ph-status {
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 10px 22px 4px;
+  font: 500 12px "JetBrains Mono", ui-monospace, monospace;
+}
+.ph-cam { width: 12px; height: 12px; border-radius: 50%; background: #0a0b0d; box-shadow: inset 0 0 0 2px #2a2c33; }
+.ph-signal { display: inline-flex; align-items: center; justify-content: flex-end; gap: 6px; font-size: 10px; letter-spacing: .08em; }
+.ph-signal b { display: inline-flex; align-items: flex-end; gap: 1.5px; height: 10px; }
+.ph-signal i { width: 3px; border-radius: 1px; background: currentColor; }
+.ph-signal i:nth-child(1) { height: 3px; }
+.ph-signal i:nth-child(2) { height: 5px; }
+.ph-signal i:nth-child(3) { height: 7px; }
+.ph-signal i:nth-child(4) { height: 10px; }
+
+.ph-app { display: flex; align-items: center; gap: 10px; padding: 8px 16px 10px; background: var(--surface); border-bottom: 1px solid var(--border); }
+.ph-avatar {
+  flex-shrink: 0; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%;
+  font: 400 19px var(--font-display); color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent-3);
+}
+.ph-app strong { display: block; font-size: 15px; line-height: 1.2; }
+.ph-app small { display: block; font-size: 11.5px; color: var(--muted); }
+
+.ph-thread {
+  flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 14px 12px 12px;
+  background-image: radial-gradient(var(--border) 1px, transparent 1.3px); background-size: 16px 16px;
+}
+.cta .phone .ph-bubble { max-width: 86%; padding: 9px 12px; border-radius: 18px; font-size: 14px; }
+.ph-bubble.in {
+  align-self: flex-start; border-bottom-left-radius: 5px;
+  background: var(--surface); border: 1px solid var(--border); animation: ph-pop .35s cubic-bezier(.2, 1.4, .4, 1) both;
+}
+.ph-bubble.out {
+  color: #fff; border-bottom-right-radius: 5px; white-space: pre-wrap; overflow-wrap: anywhere;
+  background: linear-gradient(135deg, var(--accent), #c2410c);
+}
+.ph-bubble.out small { display: block; margin-bottom: 3px; font-size: 11px; font-weight: 700; opacity: .85; }
+.ph-out { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; animation: ph-send .5s cubic-bezier(.2, 1.3, .4, 1) both; }
+.ph-out .ph-bubble { max-width: 86%; }
+.ph-meta { font-size: 11px; font-weight: 700; color: var(--muted); }
+.ph-meta b { color: var(--accent-3); letter-spacing: -.12em; }
+
+/* The form, as a card in the thread. */
+.ph-card { display: grid; gap: 12px; padding: 12px; border-radius: 18px; background: var(--surface); border: 1px solid var(--border); animation: ph-pop .4s .1s both; }
+.ph-field { display: grid; gap: 5px; min-width: 0; }
+.ph-label { font-size: 11.5px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.ph-label em { font-style: normal; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--accent); }
+.phone input, .phone textarea {
+  width: 100%; min-width: 0; padding: 9px 11px; border-radius: 12px;
+  font: inherit; font-size: 15px; color: var(--text); background: var(--bg); border: 1px solid var(--border);
+}
+.phone textarea { min-height: 76px; resize: vertical; }
+.phone input::placeholder, .phone textarea::placeholder { color: var(--muted); opacity: .7; }
+.phone input:focus, .phone textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.phone [aria-invalid="true"] { border-color: #d6333a; }
+.ph-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.ph-chip {
+  padding: 6px 11px; border-radius: 99px; cursor: pointer;
+  font: inherit; font-size: 12.5px; font-weight: 600; color: var(--text); background: var(--bg); border: 1px solid var(--border);
+  transition: background .2s, border-color .2s, color .2s, transform .2s;
+}
+.ph-chip:hover { border-color: var(--accent); }
+.ph-chip:focus-visible, .ph-send:focus-visible { outline: 2px solid var(--accent-3); outline-offset: 2px; }
+.ph-chip[aria-pressed="true"] {
+  color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 6px 14px -8px rgba(255, 90, 31, .8);
+}
+.ph-chips[aria-invalid="true"] .ph-chip { border-color: #d6333a; }
+.cta .phone .ph-error { font-size: 12.5px; font-weight: 600; color: #c4262e; animation: ph-pop .3s both; }
+.cta .phone .ph-error::before { content: "⚠ "; }
+html[data-theme="night"] .cta .phone .ph-error { color: #ff8577; }
+html[data-theme="night"] .phone [aria-invalid="true"], html[data-theme="night"] .ph-chips[aria-invalid="true"] .ph-chip { border-color: #ff8577; }
+
+/* The composer at the bottom: label, the message box with the send button next to it, the error. */
+.ph-composer {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 5px 8px;
+  margin: auto -12px -12px; padding: 10px 12px 14px; background: var(--surface); border-top: 1px solid var(--border);
+}
+.ph-composer .ph-label, .ph-composer .ph-error { grid-column: 1 / -1; }
+.ph-send {
+  display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 14px; cursor: pointer;
+  font: 400 16px var(--font-display); letter-spacing: .06em; text-transform: uppercase; color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2)); border: 0; border-radius: 99px;
+  box-shadow: 0 8px 18px -8px rgba(255, 90, 31, .8); transition: transform .2s;
+}
+.ph-send:hover { transform: translateY(-1px) rotate(-2deg); }
+.ph-send svg { width: 16px; height: 16px; fill: currentColor; }
+
+.cta .phone .ph-typing { display: inline-flex; gap: 4px; padding: 13px 14px; }
+.ph-typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: ph-dot 1s ease-in-out infinite; }
+.ph-typing i:nth-of-type(2) { animation-delay: .15s; }
+.ph-typing i:nth-of-type(3) { animation-delay: .3s; }
+
+/* Mission passed: a full-screen overlay on the phone. */
+.ph-passed {
+  position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 28px 22px; text-align: center; color: #f5f2ec;
+  background:
+    radial-gradient(circle at 50% 32%, rgba(255, 122, 51, .38), transparent 62%),
+    linear-gradient(180deg, rgba(13, 14, 17, .93), rgba(13, 14, 17, .98));
+  animation: ph-fade .45s both;
+}
+.ph-passed small { font-size: 11px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: #3fd1c5; }
+.ph-passed small b { letter-spacing: -.12em; }
+.ph-passed h3 {
+  margin: 8px 0 16px; outline: none;
+  font: 400 clamp(44px, 13vw, 58px)/.92 var(--font-display); letter-spacing: .02em; text-transform: uppercase;
+  color: #ffb21a; text-shadow: 3px 3px 0 #b4470c, 0 0 34px rgba(255, 178, 26, .45);
+  animation: ph-stamp .7s .1s cubic-bezier(.2, 1.4, .4, 1) both;
+}
+.cta .phone .ph-passed p { font-size: 15px; color: #e8e2d8; }
+.cta .phone .ph-passed p + p { margin-top: 4px; font-size: 13.5px; color: #c9c3b8; }
+.ph-passed-actions { display: grid; gap: 10px; width: 100%; max-width: 260px; margin-top: 20px; }
+.ph-passed-actions .btn { justify-content: center; }
+.ph-passed .ph-again { font-family: inherit; cursor: pointer; color: #f5f2ec; background: rgba(255, 255, 255, .08); border-color: rgba(255, 255, 255, .22); }
+.ph-passed .ph-again:hover { border-color: #ffb21a; }
+
+@keyframes ph-pop { from { opacity: 0; transform: translateY(8px) scale(.94); } }
+@keyframes ph-send { from { opacity: 0; transform: translate(24px, 18px) scale(.8); } }
+@keyframes ph-dot { 0%, 60%, 100% { opacity: .35; transform: none; } 30% { opacity: 1; transform: translateY(-4px); } }
+@keyframes ph-fade { from { opacity: 0; } }
+@keyframes ph-stamp { from { opacity: 0; transform: scale(2.2) rotate(-6deg); } }
+
+@media (max-width: 900px) {
+  .cta.contact-cta { grid-template-columns: minmax(0, 1fr); gap: 36px; text-align: center; }
+  .cta .contact-copy p { margin: 18px auto 0; }
+  .cta .contact-copy .cta-actions { justify-content: center; }
+}
+@media (max-width: 640px) {
+  .cta.contact-cta { padding: 48px 14px 18px; gap: 28px; }
+  .phone { padding: 8px; border-radius: 36px; transform: none; }
+  .phone-screen { border-radius: 29px; min-height: 500px; }
+  .phone::before { display: none; }
+  .ph-status { padding: 9px 18px 4px; }
+  .ph-send span { display: none; } /* the arrow alone */
+  .ph-send { width: 44px; padding: 0; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phone, .ph-chip, .ph-send { transition: none; }
+  .ph-bubble.in, .ph-out, .ph-card, .ph-typing i, .ph-passed, .ph-passed h3, .cta .phone .ph-error { animation: none; }
+}
+
+/* Pulled out of the pocket: the first time the contact section is seen the phone slides up and settles. */
+.phone:not(.pulled) { opacity: 0; transform: translateY(70px) rotate(8deg); }
+.phone.pulled { animation: ph-pull .75s cubic-bezier(.2, 1.25, .4, 1) both; }
+@keyframes ph-pull { from { opacity: 0; transform: translateY(70px) rotate(8deg); } }
+
+/* Home screen: a sunset wallpaper with a striped sun, a big clock, the incoming message and the apps. */
+.ph-home {
+  position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; padding: 18px 16px 18px; color: #fff;
+  background:
+    linear-gradient(180deg, #1a1030 0%, #5a1d2a 38%, #e2541b 70%, #ffb21a 100%);
+  overflow: hidden; animation: fade-in .3s both;
+}
+.ph-home::before {
+  content: ""; position: absolute; left: 50%; bottom: -60px; width: 260px; height: 260px; margin-left: -130px; border-radius: 50%;
+  background: linear-gradient(180deg, #ffe066, #ff7a33 60%, #c2290f);
+  -webkit-mask-image: linear-gradient(180deg, #000 45%, transparent 45% 50%, #000 50% 58%, transparent 58% 62%, #000 62% 70%, transparent 70% 75%, #000 75%);
+  mask-image: linear-gradient(180deg, #000 45%, transparent 45% 50%, #000 50% 58%, transparent 58% 62%, #000 62% 70%, transparent 70% 75%, #000 75%);
+  opacity: .9;
+}
+.ph-home > * { position: relative; }
+.cta .phone .ph-home-time { margin-top: 8px; font: 400 64px/1 var(--font-display); letter-spacing: .02em; text-shadow: 0 4px 18px rgba(0, 0, 0, .35); }
+.cta .phone .ph-home-date { margin-top: 4px; font-size: 13px; font-weight: 600; opacity: .85; }
+.ph-notif {
+  width: 100%; margin-top: 18px; padding: 10px 12px; border: 0; border-radius: 16px; text-align: left; cursor: pointer;
+  font: inherit; color: #14161c; background: rgba(255, 255, 255, .88); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, .55); animation: ph-drop .5s cubic-bezier(.2, 1.4, .4, 1) both;
+}
+.ph-notif b { display: flex; align-items: center; gap: 6px; font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: #5d5850; }
+.ph-notif b small { margin-left: auto; font-weight: 600; text-transform: none; letter-spacing: 0; }
+.ph-notif > span { display: block; margin-top: 2px; font-size: 13.5px; line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.ph-notif:hover { background: #fff; }
+@keyframes ph-drop { from { opacity: 0; transform: translateY(-24px) scale(.96); } }
+.ph-apps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 10px; width: 100%; margin-top: auto; padding-top: 22px; }
+.ph-icon {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 0; border: 0; background: none;
+  font: inherit; color: #fff; cursor: pointer; text-decoration: none;
+}
+.ph-ico {
+  display: grid; place-items: center; width: 54px; height: 54px; border-radius: 16px; font-size: 26px; font-style: normal;
+  background: rgba(20, 22, 28, .55); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18), 0 8px 18px -8px rgba(0, 0, 0, .6);
+  transition: transform .15s cubic-bezier(.2, 1.4, .4, 1);
+}
+.ph-ico.ico-messages { background: linear-gradient(135deg, #1fb5ad, #0f7b7b); }
+.ph-ico.ico-arcade { background: linear-gradient(135deg, #ff7a33, #c2290f); }
+.ph-ico.ico-linkedin { font: 700 24px/1 "Plus Jakarta Sans", sans-serif; background: #14161c; }
+.ph-icon span { font-size: 11.5px; font-weight: 700; text-shadow: 0 1px 4px rgba(0, 0, 0, .5); }
+.ph-icon:hover .ph-ico, .ph-icon:focus-visible .ph-ico { transform: scale(1.08); }
+.ph-icon:active .ph-ico { transform: scale(.92); }
+.ph-icon:focus-visible { outline: none; }
+.ph-icon:focus-visible .ph-ico { box-shadow: 0 0 0 3px #ffb21a; }
+.ph-badge {
+  position: absolute; top: -5px; left: calc(50% + 16px); min-width: 20px; height: 20px; padding: 0 5px; border-radius: 99px;
+  display: grid; place-items: center; font: 800 11.5px/1 "Plus Jakarta Sans", sans-serif; color: #fff; background: #e5484d;
+  box-shadow: 0 0 0 2px rgba(20, 22, 28, .55); animation: ph-pop .35s cubic-bezier(.2, 1.6, .4, 1) both;
+}
+.cta .phone .ph-hint { margin-top: 16px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; opacity: .8; animation: blink 1.6s steps(1) infinite; }
+
+/* The chat slides in from the right like opening an app; the back arrow returns to the home screen. */
+.ph-chat { flex: 1; display: flex; flex-direction: column; animation: ph-open .3s cubic-bezier(.2, .9, .3, 1) both; }
+@keyframes ph-open { from { opacity: 0; transform: translateX(30px); } }
+.ph-back {
+  flex-shrink: 0; display: grid; place-items: center; width: 30px; height: 38px; margin-left: -6px; padding: 0; border: 0; background: none;
+  font: 400 30px/1 "Plus Jakarta Sans", sans-serif; color: var(--accent); cursor: pointer;
+}
+
+/* "Text message sent": a game-style banner that drops in over the chat once it's delivered. */
+.cta .phone .ph-toast {
+  position: absolute; left: 10px; right: 10px; top: 40px; z-index: 4; display: flex; flex-direction: column; gap: 1px;
+  padding: 9px 14px; border-radius: 12px; border-left: 4px solid #ffb21a; color: #f2efe9; background: rgba(13, 14, 17, .92);
+  box-shadow: 0 12px 26px -12px rgba(0, 0, 0, .7); animation: ph-drop .45s cubic-bezier(.2, 1.4, .4, 1) both;
+}
+.ph-toast b { font: 400 16px/1.1 var(--font-display); letter-spacing: .06em; text-transform: uppercase; color: #ffb21a; }
+.ph-toast span { font-size: 12px; color: #a8a299; }
+
+@media (prefers-reduced-motion: reduce) {
+  .phone:not(.pulled) { opacity: 1; transform: none; }
+}

@@ -1,0 +1,73 @@
+/* Language switch (EN · NL · FR) and the small layout tweaks Dutch and French copy needs.
+   Loaded by src/i18n.jsx; uses the colour tokens from styles.css, so it follows the day/sunset/night themes. */
+
+.lang-switch {
+  display: inline-flex; align-items: center; flex-shrink: 0; padding: 2px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--surface);
+}
+.lang-switch-item { display: inline-flex; align-items: center; }
+.lang-switch-dot { padding: 0 1px; font-size: 12px; line-height: 1; color: var(--muted); opacity: .6; user-select: none; }
+.lang-switch button {
+  min-width: 34px; min-height: 32px; padding: 0 7px; border: 0; border-radius: 8px; background: none; cursor: pointer;
+  font: 700 12px/1 "Plus Jakarta Sans", system-ui, sans-serif; letter-spacing: .06em; color: var(--muted);
+  transition: background-color .2s, color .2s;
+}
+.lang-switch button:hover { color: var(--text); background: var(--accent-soft); }
+.lang-switch button[aria-pressed="true"] { color: #fff; background: var(--accent); box-shadow: 0 4px 12px -6px rgba(255, 90, 31, .7); }
+.lang-switch button:focus-visible { outline: 3px solid var(--accent-2); outline-offset: 1px; }
+@media (max-width: 640px) {
+  .lang-switch button { min-width: 32px; padding: 0 5px; font-size: 11.5px; }
+  .lang-switch-dot { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lang-switch button { transition: none; }
+}
+
+/* Dutch and French have longer words: let headings hyphenate rather than overflow on a phone. */
+html[lang="nl"] :is(.hero h1, .section-head h2, .ld-info h3, .cd-info h3, .hc-area-head h3, .hp-objective h3),
+html[lang="fr"] :is(.hero h1, .section-head h2, .ld-info h3, .cd-info h3, .hc-area-head h3, .hp-objective h3) {
+  overflow-wrap: break-word; hyphens: auto;
+}
+
+/* The mini-map pill says " · map" from styles.css. */
+html[lang="nl"] .minimap-label::after { content: " · kaart"; }
+html[lang="fr"] .minimap-label::after { content: " · carte"; }
+
+/* Phones: both hero buttons share one row, so give the longer labels a little more room, and let them
+   stack rather than push the page sideways if a narrow phone still can't fit both. */
+@media (max-width: 640px) {
+  html[lang="nl"] .hero-actions,
+  html[lang="fr"] .hero-actions { flex-wrap: wrap; }
+  html[lang="nl"] .hero-actions .btn,
+  html[lang="fr"] .hero-actions .btn { padding-inline: 10px; font-size: 14px; }
+}
+
+/* Phones: the health check area tabs are narrow; wrap long area names (Automatisering) instead of clipping them. */
+@media (max-width: 760px) {
+  html[lang="nl"] .hc-area strong,
+  html[lang="fr"] .hc-area strong { white-space: normal; overflow-wrap: anywhere; hyphens: auto; font-size: 13px; }
+}
+
+/* Mission titles on the heist board (Bouwen & testen, Transmettre) get the same treatment. */
+html[lang="nl"] .hp-wp strong,
+html[lang="fr"] .hp-wp strong { overflow-wrap: anywhere; hyphens: auto; }
+
+/* The header picker: a native select (accessible, keyboard-friendly) dressed as a small pill showing the code. */
+.lang-select {
+  position: relative; display: inline-grid; place-items: center; flex-shrink: 0; height: 32px; min-width: 46px; padding: 0 22px 0 10px;
+  border-radius: 99px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer;
+}
+.lang-select b { font: 700 12px/1 "Plus Jakarta Sans", system-ui, sans-serif; letter-spacing: .06em; pointer-events: none; }
+.lang-select::after {
+  content: ""; position: absolute; right: 9px; top: 50%; width: 6px; height: 6px; margin-top: -5px;
+  border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); pointer-events: none;
+}
+.lang-select select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
+.lang-select:hover { border-color: var(--accent); }
+.lang-select:focus-within { outline: 3px solid var(--accent-2); outline-offset: 1px; }
+
+/* Where the switch sits: in the header on wide screens, inside the menu wherever the menu button shows. */
+.menu-lang { align-self: flex-start; margin: 10px 14px 6px; }
+@media (max-width: 960px) {
+  .nav-lang { display: none; }
+}

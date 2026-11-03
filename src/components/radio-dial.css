@@ -1,0 +1,19 @@
+/* Syntacks FM additions: numbered preset buttons like a car stereo, and the preset on the LCD. */
+.radio-lcd small { display: flex; justify-content: space-between; gap: 8px; }
+.radio-ch { font-weight: 500; color: #ffb21a; text-shadow: 0 0 8px rgba(255, 178, 26, .5); }
+.radio-presets { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; margin-top: 10px; }
+.radio-presets button {
+  height: 26px; padding: 0; cursor: pointer;
+  font: 700 12px "JetBrains Mono", monospace; color: #c9c3b8;
+  background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .12); border-radius: 6px;
+  transition: background .2s, color .2s, border-color .2s;
+}
+.radio-presets button:hover { color: #fff; border-color: rgba(255, 255, 255, .3); }
+.radio-presets button[aria-pressed="true"] {
+  color: #14161c; border-color: transparent; background: linear-gradient(135deg, #ff5a1f, #ffb21a);
+  box-shadow: 0 0 10px rgba(255, 122, 51, .45);
+}
+.radio-presets button:focus-visible { outline: 2px solid #3fd1c5; outline-offset: 1px; }
+@media (prefers-reduced-motion: reduce) {
+  .radio-presets button { transition: none; }
+}
