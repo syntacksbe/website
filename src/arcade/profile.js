@@ -13,6 +13,9 @@ export const EMPTY_PROFILE = {
   avatar: DEFAULT_AVATAR,
   garage: DEFAULT_GARAGE,
   shop: { spent: 0, owned: [], equipped: { background: 'standard', border: 'classic' } },
+  // keyboard: which letters stand in for "previous / next" (Q and E on QWERTY, A and E on AZERTY, arrows only
+  // for anything else); 'auto' asks the browser where it can (Chrome) and falls back to QWERTY.
+  settings: { keyboard: 'auto' },
   updatedAt: null,
 }
 
@@ -25,6 +28,7 @@ function merge(base, saved) {
     avatar: { ...base.avatar, ...(s.avatar || {}) },
     garage: { ...base.garage, ...(s.garage || {}) },
     shop: { ...base.shop, ...(s.shop || {}), equipped: { ...base.shop.equipped, ...(s.shop?.equipped || {}) } },
+    settings: { ...base.settings, ...(s.settings || {}) },
     updatedAt: s.updatedAt ?? null,
   }
 }
@@ -39,7 +43,7 @@ export function loadProfile() {
   return cache
 }
 
-// Saves a change: `info`, `avatar`, `garage` and `shop` are merged one level deep (shop.equipped too).
+// Saves a change: `info`, `avatar`, `garage`, `shop` and `settings` are merged one level deep (shop.equipped too).
 export function saveProfile(patch) {
   const now = loadProfile()
   const p = typeof patch === 'function' ? patch(now) : patch
@@ -48,6 +52,7 @@ export function saveProfile(patch) {
     avatar: { ...now.avatar, ...(p.avatar || {}) },
     garage: { ...now.garage, ...(p.garage || {}) },
     shop: { ...now.shop, ...(p.shop || {}), equipped: { ...now.shop.equipped, ...(p.shop?.equipped || {}) } },
+    settings: { ...now.settings, ...(p.settings || {}) },
     updatedAt: new Date().toISOString(),
   })
   try {
@@ -89,3 +94,24 @@ export function useProfile() {
 
 export const fullName = (info) => [info.firstName, info.lastName].map((s) => s.trim()).filter(Boolean).join(' ')
 export const initials = (info) => [info.firstName, info.lastName].map((s) => s.trim()[0] ?? '').join('').toUpperCase()
+
+// Keyboard layouts the profile can choose, and the "previous / next" letters each one uses next to the arrow keys.
+export const KEYBOARDS = [
+  ['auto', 'Detect', 'Asks the browser; QWERTY when it can\'t tell.'],
+  ['qwerty', 'QWERTY', 'Q and E, like the games.'],
+  ['azerty', 'AZERTY', 'A and E: Q sits where A is in Belgium and France.'],
+  ['other', 'Other', 'Arrow keys only.'],
+]
+export const NAV_KEYS = { qwerty: ['q', 'e'], azerty: ['a', 'e'], other: [null, null] }
+
+// The layout to use: the chosen one, or for 'auto' what the Keyboard API says (Chrome only), else QWERTY.
+export async function resolveKeyboard() {
+  const chosen = loadProfile().settings.keyboard
+  if (chosen && chosen !== 'auto') return chosen
+  try {
+    const map = await navigator.keyboard.getLayoutMap()
+    return map.get('KeyQ') === 'a' ? 'azerty' : 'qwerty'
+  } catch {
+    return 'qwerty'
+  }
+}

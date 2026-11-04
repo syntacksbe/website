@@ -98,6 +98,19 @@ Before saying a change is done, check it in the browser:
   chase at five stars (`?chase` opens its driving game "Lose the heat" directly), the heist crew in "How we'll work", wasted / mission-failed screens. Its words are in
   `src/gta/strings.js` (en/nl/fr, checked by `check-i18n.mjs`); state in localStorage `syntacks-gta-v1`.
   The owner rejected scroll-triggered popup banners and a news ticker: don't bring them back
+- `blog/posts/<slug>.md` + `scripts/build-blog.mjs` — the patch notes: one markdown post per Salesforce release
+  (front matter: title, version, date, tagline, summary, optional `status: draft` and `sources`), written like game
+  patch notes with `[new] [buff] [nerf] [fix] [breaking] [beta] [pilot] [retired]` tags on list items and `> ` quotes
+  as "Marc's take". Scope: Apex, LWC and everything dev, Flow and core config, Sales Cloud and Service Cloud. The
+  script (run by `npm run dev` / `npm run build`, or `npm run blog`) renders static pages `blog/index.html` and
+  `blog/<slug>/index.html` (git-ignored, picked up by `vite.config.js` as extra pages so crawlers get the article
+  as HTML), `public/blog/feed.xml` (RSS), `public/sitemap.xml`, `public/robots.txt` and `src/blog/posts.index.js`
+  (committed; the menus read it). `src/blog/main.jsx` adds the header (`BlogNav.jsx`) and footer around the article;
+  the GTA layer stays off there, but the sections of a post are GTA-style tabs (`tabs.js`: one panel at a time, arrow buttons,
+  arrows, Q / E or A / E per the profile's keyboard setting in `profile.js`, swipe, hash). `Deck.jsx` is card deck mode: it reads the `.pn-item`s from the
+  page, so a post needs nothing extra; picks are saved in localStorage `syntacks-patch-deck-v1`. Styles in `src/blog/blog.css`. The "Patch notes" menu item with its release
+  sub-items is `PatchNotesMenu` / `patchNotesLinks` in `Nav.jsx`, shared by the homepage, the Arcade and the blog.
+  English only
 - `src/styles.css` — all styles; colour tokens on `:root`, overridden per `html[data-theme]`; every animation must
   respect `prefers-reduced-motion`
 - `vite.config.js` — `base: '/website/'`; change to `'/'` if a custom domain is connected

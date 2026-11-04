@@ -134,7 +134,7 @@ export default function Wheels({ page }) {
   useEffect(() => onSignal('wheel-aim', (item) => { aimed.current = item }), [])
 
   useEffect(() => {
-    const keyFor = { c: 'character', q: 'tools' }
+    const keyFor = { c: 'character', q: 'tools', a: 'tools' } // A: where Q sits on AZERTY
     const down = (e) => {
       if (e.repeat || typing(e)) return
       const kind = keyFor[e.key.toLowerCase()]

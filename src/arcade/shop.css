@@ -248,3 +248,6 @@ html[data-theme="day"] .ar-gears > span { color: #b86e00; }
   .ar-shop-wallet { width: 100%; }
 }
 @media (max-width: 380px) { .ar-shop-items { grid-template-columns: 1fr; } }
+.ar-pf-choices { flex-direction: row !important; flex-wrap: wrap; gap: 6px !important; justify-content: flex-end; }
+.ar-pf-choices .ar-pf-switch { min-width: 0; }
+@media (max-width: 640px) { .ar-pf-setting:has(.ar-pf-choices) { flex-direction: column; align-items: stretch; } .ar-pf-choices { justify-content: flex-start; } }

@@ -5,3 +5,9 @@ node_modules/
 !.env.example
 .claude/settings.local.json
 dist/
+# Built by scripts/build-blog.mjs from blog/posts/*.md (src/blog/posts.index.js is committed)
+/blog/index.html
+/blog/*/index.html
+/public/blog/
+/public/sitemap.xml
+/public/robots.txt

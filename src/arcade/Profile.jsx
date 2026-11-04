@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { beep, burst, setSound, soundOn } from './fx.js'
-import { clearProfile, fullName, saveProfile } from './profile.js'
+import { KEYBOARDS, clearProfile, fullName, saveProfile } from './profile.js'
 import { rankFor } from './progress.js'
 import { ITEMS, gearsText, itemById, ownsPart, useShop } from './shop.js'
 import { SLOTS, TABS, cleanPlate, option, partItemId, slotById } from './avatarParts.js'
@@ -26,6 +26,20 @@ function readDj() {
   } catch {
     return true
   }
+}
+
+// A setting with a few named values: a row of pills, the chosen one lit.
+function Choice({ label, note, value, options, onPick }) {
+  return (
+    <div className="ar-pf-setting">
+      <span><strong>{label}</strong><small>{note}</small></span>
+      <span className="ar-pf-choices" role="radiogroup" aria-label={label}>
+        {options.map(([id, name, hint]) => (
+          <button key={id} type="button" role="radio" aria-checked={value === id} className="ar-pf-switch" title={hint} onClick={() => onPick(id)}>{name}</button>
+        ))}
+      </span>
+    </div>
+  )
 }
 
 function Toggle({ label, note, on, onFlip }) {
@@ -277,6 +291,10 @@ export default function Profile({ progress }) {
           <h2>Settings</h2>
           <Toggle label="Sound effects" note="Short synth sounds in the games." on={sound} onFlip={() => { setSound(!sound); setSoundState(!sound) }} />
           <Toggle label="Radio DJ & ads" note="Spoken lines and fake ads between songs on Syntacks FM." on={dj} onFlip={flipDj} />
+          <Choice
+            label="Keyboard" note="Which keys flip the patch-notes tabs and open the wheels: Q / E on QWERTY, A / E on AZERTY."
+            value={shop.profile.settings.keyboard} options={KEYBOARDS} onPick={(keyboard) => saveProfile({ settings: { keyboard } })}
+          />
           <div className="ar-pf-danger">
             {sure ? (
               <>

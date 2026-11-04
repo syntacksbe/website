@@ -37,6 +37,22 @@ rounds, weekly challenge with a leaderboard (fake players for now), trophy cabin
 shop paid in gears (backgrounds, card borders, stations, character and garage parts), profile with a character
 creator (body, face, hair, clothes, garage) and the SVG car.
 
+**Patch notes blog** (`/website/blog/`, built 2026-11-04): each Salesforce release as game patch notes, one
+markdown file per release in `blog/posts/`, rendered to static HTML by `scripts/build-blog.mjs` (runs with dev
+and build), with an RSS feed, a sitemap and robots.txt. Scope per post: Apex, LWC and dev tooling, Flow and
+automation (incl. approvals), core config, Sales Cloud, Service Cloud, breaking changes, "What I'd actually use"
+and "What breaks". Inside a post the sections are GTA-style tabs (`src/blog/tabs.js`): a sticky strip under the
+header, one panel at a time, switched by click, the arrow buttons on the strip, arrow keys, Q / E (A / E on AZERTY: a "Keyboard" setting in the
+Arcade profile, auto-detected in Chrome) or a swipe, with the hash remembering the open section; without JavaScript
+every section shows. Each post also has a **card deck mode** (`src/blog/Deck.jsx`, button in the post header): every tagged item
+is a card, swipe right "I'll use this", up "Breaks for me", left "Skip" (or buttons, arrow keys, Backspace to undo),
+pick sections first, progress saved per post in localStorage `syntacks-patch-deck-v1`, and the end screen is your
+checklist for that release (breaks first) to copy or save as a .md file. The header has a "Patch notes" item with the three latest releases as sub-items (hover
+panel on desktop, indented in the phone menu). Posts: Spring '26, Summer '26, Winter '27, researched from the
+official release notes on 2026-11-04 and marked `status: draft` until the owner has checked them. English only;
+the GTA layer is off on blog pages. Other reading modes proposed but not built: a boss-fight quiz per
+release in the Arcade, the radio DJ reading the picks aloud, and a GTA loading-screen mode.
+
 ## Owner decisions (don't re-propose)
 
 - No deploys without an explicit ask. Commit and push only when asked.
@@ -61,6 +77,8 @@ creator (body, face, hair, clothes, garage) and the SVG car.
 5. Crew wording and the radio ads are first drafts waiting for the owner's review.
 6. Not started: own domain and SEO basics, privacy-friendly analytics, accessibility pass, pre-deploy checks,
    "Ask my org" assistant, city-map homepage.
+7. The three patch-notes posts are drafts: check every item against the release notes (links at the end of each
+   post), rewrite "Marc's take" in your own words, then remove `status: draft` from the front matter.
 
 ## Proposed features (2026-11-04, not started)
 
@@ -75,7 +93,7 @@ For winning work:
   Trail CSV and the gauges and the PDF use the real org, still client-side.
 - ★ **Character sheet PDF**: one-page consultant profile with jsPDF (stats, certs, sectors, mission history,
   no employer names) for agencies that ask for a CV.
-- **Patch notes blog**: each Salesforce release as game patch notes, static markdown with RSS, for SEO.
+- ~~**Patch notes blog**~~: built 2026-11-04 (see "What is built").
 - **Mission briefing wizard**: five questions give a phased plan with rough effort ranges and a brief the
   visitor can send on LinkedIn.
 

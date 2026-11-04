@@ -5,7 +5,7 @@ import Footer from '../components/Footer.jsx'
 import Toasts from '../components/Toasts.jsx'
 import RadioDial from '../components/RadioDial.jsx'
 import Logo from '../components/Logo.jsx'
-import { MenuButton, SITE_LINKS } from '../components/Nav.jsx'
+import { MenuButton, PatchNotesMenu, SITE_LINKS, patchNotesLinks } from '../components/Nav.jsx'
 import Catalog from './Catalog.jsx'
 import Player from './Player.jsx'
 import Daily from './Daily.jsx'
@@ -102,6 +102,7 @@ function Arcade() {
           <nav className="nav-links" aria-label="Main">
             {SITE_LINKS.map((l) => {
               const arcade = l.href === 'arcade/'
+              if (l.href === 'blog/') return <PatchNotesMenu key={l.href} base="../" />
               return (
                 <a key={l.href} href={arcade ? '#/' : `../${l.href}`} className={l.minor ? 'minor' : undefined} aria-current={arcade ? 'page' : undefined}>
                   {l.label}
@@ -133,7 +134,7 @@ function Arcade() {
             </a>
             <a href="../#contact" className="btn btn-primary btn-sm">Let's talk</a>
             <MenuButton links={[
-              ...SITE_LINKS.map((l) => (l.href === 'arcade/' ? { ...l, href: '#/', current: true } : { ...l, href: `../${l.href}` })),
+              ...patchNotesLinks(SITE_LINKS.map((l) => (l.href === 'arcade/' ? { ...l, href: '#/', current: true } : { ...l, href: `../${l.href}` })), '../'),
               { href: '#/shop', label: `Shop · ${gearsText(shop.gears)}` },
               { href: '#/profile', label: 'Your profile' },
             ]}>
